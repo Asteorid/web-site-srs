@@ -29,25 +29,40 @@
       <label>
         Сортировать:
         <select v-model="sortKey">
-          <option value="name">По имени</option>
+          <option value="title">По имени</option>
           <option value="price">По цене</option>
         </select>
       </label>
     </div>
     <!-- Отображение карточек товаров -->
     <div class="products-container">
-      <div class="product-card" v-for="product in filteredAndSortedProducts" :key="product.id">
-        <img :src="product.image" alt="Product image" class="product-image" />
+      <div class="product-card" v-for="product in filteredAndSortedProducts" :key="product.id" @click="openProductModal(product)">
+        <img :src="product.thumbnail" alt="Product image" class="product-image" />
         <div class="product-info">
-          <h2 class="product-name">{{ product.name }}</h2>
+          <h2 class="product-name">{{ product.title }}</h2>
           <p class="product-price">{{ product.price }} Тг</p>
           <button @click="addToCart(product)">Добавить в корзину</button>
         </div>
       </div>
     </div>
+
+     <!-- Модальное окно для показа выбранного товара -->
+     <div v-if="selectedProduct" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="closeProductModal">&times;</span>
+        <img :src="selectedProduct.thumbnail" alt="Product image" class="modal-product-image" />
+        <div class="modal-product-info">
+          <h2>{{ selectedProduct.title }}</h2>
+          <p>{{ selectedProduct.price }} Тг</p>
+          <p>{{ selectedProduct.description }}</p>
+          <button @click="addToCart(selectedProduct)">Добавить в корзину</button>
+        </div>
+      </div>
+    </div>
+
     <h2>Корзина</h2>
     <div v-for="item in cart" :key="item.id">
-      <p>{{ item.name }} - {{ item.price }} Тг (кол-во: {{ item.quantity }})</p>
+      <p>{{ item.title }} - {{ item.price }} Тг (кол-во: {{ item.quantity }})</p>
       <button @click="removeFromCart(item.id)">Удалить</button>
     </div>
     <p v-if="cart.length > 0">Сумма заказа: {{ totalPrice }} Тг</p>
@@ -73,6 +88,7 @@
       </form>
     </div>
   </div>
+  
 </template>
 
 <script>
@@ -82,7 +98,7 @@ export default {
   data() {
     return {
       selectedCategories: [],
-      sortKey: 'name',
+      sortKey: 'title',
       searchQuery: '',
       showSearch: false,
       order: {
@@ -90,6 +106,7 @@ export default {
         address: '',
       },
       formSubmitted: false,
+      selectedProduct: null
     };
   },
   computed: {
@@ -99,7 +116,7 @@ export default {
     },
     filteredAndSortedProducts() {
       let filtered = this.products.filter(product =>
-        product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        product.title.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
 
       if (this.selectedCategories.length > 0) {
@@ -109,8 +126,8 @@ export default {
       }
 
       return filtered.sort((a, b) => {
-        if (this.sortKey === 'name') {
-          return a.name.localeCompare(b.name);
+        if (this.sortKey === 'title') {
+          return a.title.localeCompare(b.title);
         } else if (this.sortKey === 'price') {
           return a.price - b.price;
         }
@@ -145,6 +162,12 @@ export default {
       this.order.address = '';
       this.formSubmitted = false;
       this.$emit('clear-cart');
+    },
+    openProductModal(product) {
+      this.selectedProduct = product;
+    },
+    closeProductModal() {
+      this.selectedProduct = null;
     },
   },
 };
@@ -219,4 +242,56 @@ form {
 .input-error {
   border: 2px solid red;
 }
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 500px;
+  max-width: 90%;
+  text-align: center;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.modal-product-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.modal-product-info {
+  margin-top: 20px;
+}
+
+button {
+  background-color: #42b983;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #35495e;
+}
 </style>
+

@@ -5,6 +5,7 @@
       <router-link to="/register">Регистрация</router-link>
       <router-link to="/json-table">Json Данные</router-link>
       <router-link to="/about">О нас</router-link>
+      <router-link to="/user-profile">Личный кабинет</router-link>
     </nav>
   </header>
 </template>
